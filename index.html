@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <!-- 设置视口，确保在移动设备上正确显示 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 页面标题 -->
+    <title>艺术签名生成器</title>
+    <!-- 链接到CSS样式表 -->
+    <link rel="stylesheet" href="styles.css">
+    <!-- 引入Google字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;700&family=ZCOOL+QingKe+HuangYou&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- 整体容器 -->
+    <div class="container">
+        <!-- 页面头部 -->
+        <header>
+            <h1>艺术签名生成器</h1>
+            <p>输入您的姓名，创建个性化艺术签名</p>
+        </header>
+        
+        <!-- 主要内容区域 -->
+        <main>
+            <!-- 签名生成表单 -->
+            <section class="generator-form">
+                <div class="form-group">
+                    <label for="name-input">您的姓名:</label>
+                    <input type="text" id="name-input" placeholder="请输入您的姓名" maxlength="15">
+                </div>
+                
+                <div class="form-group">
+                    <label for="font-select">选择字体风格:</label>
+                    <select id="font-select">
+                        <option value="Ma Shan Zheng">行书风格</option>
+                        <option value="ZCOOL QingKe HuangYou">黑体风格</option>
+                        <option value="ZCOOL XiaoWei">宋体风格</option>
+                        <option value="Noto Serif SC">楷体风格</option>
+                    </select>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label for="color-input">签名颜色:</label>
+                        <input type="color" id="color-input" value="#000000">
+                    </div>
+                    
+                    <div class="form-group half">
+                        <label for="size-range">字体大小:</label>
+                        <input type="range" id="size-range" min="30" max="100" value="60">
+                        <span id="size-value">60px</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="style-select">签名装饰:</label>
+                    <select id="style-select">
+                        <option value="none">无装饰</option>
+                        <option value="underline">下划线</option>
+                        <option value="box">方框</option>
+                        <option value="circle">圆形</option>
+                        <option value="shadow">阴影效果</option>
+                    </select>
+                </div>
+                
+                <button id="generate-btn" class="btn">生成签名</button>
+            </section>
+            
+            <!-- 签名结果展示区域 -->
+            <section class="signature-result">
+                <h2>您的艺术签名</h2>
+                <div class="canvas-container">
+                    <canvas id="signature-canvas" width="600" height="200"></canvas>
+                </div>
+                <div class="result-actions">
+                    <button id="download-btn" class="btn btn-secondary" disabled>下载签名</button>
+                    <button id="reset-btn" class="btn btn-secondary">重置</button>
+                </div>
+            </section>
+        </main>
+        
+        <!-- 页脚信息 -->
+        <footer>
+            <p>© 2024 艺术签名生成器 | 由HTML5和Canvas技术提供支持</p>
+        </footer>
+    </div>
+    
+    <!-- 引入JavaScript脚本 -->
+    <script src="script.js"></script>
+</body>
+</html> 

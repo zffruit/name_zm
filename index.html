@@ -39,6 +39,19 @@
                     </select>
                 </div>
                 
+                <!-- 自定义字体上传区域 -->
+                <div class="form-group custom-font-area">
+                    <label for="custom-font-input">上传自定义字体:</label>
+                    <div class="custom-font-input-container">
+                        <input type="file" id="custom-font-input" accept=".ttf,.otf,.woff,.woff2" class="custom-font-file">
+                        <button id="custom-font-btn" class="btn btn-secondary">选择字体文件</button>
+                    </div>
+                    <div class="custom-font-info">
+                        <p>支持的格式: TTF, OTF, WOFF, WOFF2</p>
+                        <p id="selected-font-name">未选择字体文件</p>
+                    </div>
+                </div>
+                
                 <div class="form-row">
                     <div class="form-group half">
                         <label for="color-input">签名颜色:</label>

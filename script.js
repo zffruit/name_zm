@@ -13,10 +13,101 @@ document.addEventListener('DOMContentLoaded', function() {
     const canvas = document.getElementById('signature-canvas');
     const ctx = canvas.getContext('2d');
     
+    // 自定义字体上传相关元素
+    const customFontInput = document.getElementById('custom-font-input');
+    const customFontBtn = document.getElementById('custom-font-btn');
+    const selectedFontName = document.getElementById('selected-font-name');
+    
+    // 存储自定义字体对象
+    let customFontList = [];
+    let currentCustomFontIndex = -1;
+    
     // 更新字体大小显示
     sizeRange.addEventListener('input', function() {
         sizeValue.textContent = this.value + 'px';
     });
+    
+    // 自定义字体按钮点击事件
+    customFontBtn.addEventListener('click', function() {
+        customFontInput.click();
+    });
+    
+    // 自定义字体文件选择事件
+    customFontInput.addEventListener('change', handleFontUpload);
+    
+    // 处理字体上传功能
+    function handleFontUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        // 验证文件类型
+        const validExtensions = ['.ttf', '.otf', '.woff', '.woff2'];
+        const fileName = file.name;
+        const fileExt = fileName.substring(fileName.lastIndexOf('.')).toLowerCase();
+        
+        if (!validExtensions.includes(fileExt)) {
+            showMessage('请上传有效的字体文件（TTF、OTF、WOFF、WOFF2格式）', 'error');
+            return;
+        }
+        
+        // 更新选中的字体名称显示
+        const displayName = fileName.substring(0, fileName.lastIndexOf('.'));
+        selectedFontName.textContent = displayName;
+        
+        // 读取字体文件
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const fontData = e.target.result;
+            
+            // 创建一个字体名称，使用时间戳确保唯一性
+            const fontName = `custom-font-${Date.now()}`;
+            
+            // 使用FontFace API加载字体
+            const customFont = new FontFace(fontName, fontData);
+            
+            customFont.load().then(function(loadedFace) {
+                // 添加字体到文档
+                document.fonts.add(loadedFace);
+                
+                // 保存字体信息到自定义字体列表
+                const fontInfo = {
+                    name: fontName,
+                    displayName: displayName,
+                    fontFace: loadedFace
+                };
+                
+                customFontList.push(fontInfo);
+                currentCustomFontIndex = customFontList.length - 1;
+                
+                // 添加到字体选择下拉菜单
+                const option = document.createElement('option');
+                option.value = fontName;
+                option.textContent = `自定义: ${displayName}`;
+                option.selected = true;
+                fontSelect.appendChild(option);
+                
+                showMessage(`字体 "${displayName}" 已成功加载！`, 'success');
+                
+                // 预览该字体（可选）
+                previewCustomFont(fontName);
+            }).catch(function(error) {
+                showMessage('字体加载失败: ' + error.message, 'error');
+            });
+        };
+        
+        reader.readAsArrayBuffer(file);
+    }
+    
+    // 预览自定义字体
+    function previewCustomFont(fontName) {
+        // 设置预览字体
+        nameInput.style.fontFamily = fontName;
+        
+        // 如果名称输入框为空，添加示例文本
+        if (!nameInput.value.trim()) {
+            nameInput.placeholder = "使用自定义字体预览效果";
+        }
+    }
     
     // 生成签名按钮点击事件
     generateBtn.addEventListener('click', generateSignature);
@@ -34,7 +125,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // 验证姓名是否为空
         if (!name) {
-            alert('请输入您的姓名');
+            showMessage('请输入您的姓名', 'error');
             nameInput.focus();
             return;
         }
@@ -111,7 +202,7 @@ document.addEventListener('DOMContentLoaded', function() {
         downloadBtn.disabled = false;
         
         // 显示成功消息
-        showMessage('签名生成成功！');
+        showMessage('签名生成成功！', 'success');
     }
     
     // 重置画布函数
@@ -138,11 +229,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // 触发点击事件
         link.click();
         
-        showMessage('签名已下载！');
+        showMessage('签名已下载！', 'success');
     }
     
     // 显示消息函数
-    function showMessage(text) {
+    function showMessage(text, type = 'success') {
         // 检查是否已有消息元素
         let messageEl = document.querySelector('.message');
         
@@ -155,12 +246,22 @@ document.addEventListener('DOMContentLoaded', function() {
             messageEl.style.left = '50%';
             messageEl.style.transform = 'translateX(-50%)';
             messageEl.style.padding = '10px 20px';
-            messageEl.style.backgroundColor = '#67c23a';
             messageEl.style.color = '#fff';
             messageEl.style.borderRadius = '4px';
             messageEl.style.boxShadow = '0 2px 12px 0 rgba(0, 0, 0, 0.1)';
             messageEl.style.zIndex = '9999';
             document.body.appendChild(messageEl);
+        }
+        
+        // 根据消息类型设置背景颜色
+        if (type === 'success') {
+            messageEl.style.backgroundColor = '#67c23a';
+        } else if (type === 'error') {
+            messageEl.style.backgroundColor = '#f56c6c';
+        } else if (type === 'warning') {
+            messageEl.style.backgroundColor = '#e6a23c';
+        } else if (type === 'info') {
+            messageEl.style.backgroundColor = '#909399';
         }
         
         // 设置消息内容

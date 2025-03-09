@@ -101,6 +101,49 @@ input[type="text"]:focus {
     box-shadow: 0 0 0 3px rgba(64, 158, 255, 0.1);
 }
 
+/* 自定义字体上传区域样式 */
+.custom-font-area {
+    background-color: #f5f7fa;
+    padding: 15px;
+    border-radius: 5px;
+    border: 1px dashed #dcdfe6;
+    margin-top: 15px;
+    margin-bottom: 25px;
+}
+
+.custom-font-input-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.custom-font-file {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+.custom-font-info {
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: #909399;
+}
+
+.custom-font-info p {
+    margin: 5px 0;
+}
+
+#selected-font-name {
+    font-weight: 600;
+    color: #409eff;
+}
+
+/* 下拉框样式 */
 select {
     width: 100%;
     padding: 12px 15px;
@@ -269,6 +312,15 @@ footer {
     
     #generate-btn {
         width: 100%;
+    }
+    
+    .custom-font-input-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .custom-font-input-container button {
+        margin-top: 10px;
     }
 }
 

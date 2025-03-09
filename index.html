@@ -41,15 +41,38 @@
                 
                 <!-- 自定义字体上传区域 -->
                 <div class="form-group custom-font-area">
-                    <label for="custom-font-input">上传自定义字体:</label>
-                    <div class="custom-font-input-container">
-                        <input type="file" id="custom-font-input" accept=".ttf,.otf,.woff,.woff2" class="custom-font-file">
-                        <button id="custom-font-btn" class="btn btn-secondary">选择字体文件</button>
+                    <label>上传自定义字体:</label>
+                    
+                    <div class="font-upload-tabs">
+                        <button id="file-tab-btn" class="tab-btn active">单个字体文件</button>
+                        <button id="folder-tab-btn" class="tab-btn">字体文件夹</button>
                     </div>
-                    <div class="custom-font-info">
-                        <p>支持的格式: TTF, OTF, WOFF, WOFF2</p>
-                        <p id="selected-font-name">未选择字体文件</p>
+                    
+                    <div id="file-upload-panel" class="upload-panel active">
+                        <div class="custom-font-input-container">
+                            <input type="file" id="custom-font-input" accept=".ttf,.otf,.woff,.woff2" class="custom-font-file">
+                            <button id="custom-font-btn" class="btn btn-secondary">选择字体文件</button>
+                        </div>
+                        <div class="custom-font-info">
+                            <p>支持的格式: TTF, OTF, WOFF, WOFF2</p>
+                            <p id="selected-font-name">未选择字体文件</p>
+                        </div>
                     </div>
+                    
+                    <div id="folder-upload-panel" class="upload-panel">
+                        <div class="custom-font-input-container">
+                            <input type="file" id="font-folder-input" webkitdirectory directory multiple class="custom-font-file">
+                            <button id="font-folder-btn" class="btn btn-secondary">选择字体文件夹</button>
+                        </div>
+                        <div class="custom-font-info">
+                            <p>一次性加载文件夹中的所有字体</p>
+                            <p id="loaded-fonts-count">未选择文件夹</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="loaded-fonts-list" class="loaded-fonts-container">
+                    <!-- 这里将动态显示已加载的字体 -->
                 </div>
                 
                 <div class="form-row">

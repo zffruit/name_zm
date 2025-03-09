@@ -111,6 +111,43 @@ input[type="text"]:focus {
     margin-bottom: 25px;
 }
 
+/* 上传选项卡样式 */
+.font-upload-tabs {
+    display: flex;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #dcdfe6;
+}
+
+.tab-btn {
+    padding: 8px 15px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-size: 0.95rem;
+    color: #606266;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.tab-btn:hover {
+    color: #409eff;
+}
+
+.tab-btn.active {
+    color: #409eff;
+    border-bottom-color: #409eff;
+    font-weight: 600;
+}
+
+.upload-panel {
+    display: none;
+    padding-top: 10px;
+}
+
+.upload-panel.active {
+    display: block;
+}
+
 .custom-font-input-container {
     display: flex;
     align-items: center;
@@ -138,9 +175,72 @@ input[type="text"]:focus {
     margin: 5px 0;
 }
 
-#selected-font-name {
+#selected-font-name,
+#loaded-fonts-count {
     font-weight: 600;
     color: #409eff;
+}
+
+/* 已加载字体列表样式 */
+.loaded-fonts-container {
+    max-height: 150px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+    padding: 10px;
+    border: 1px solid #dcdfe6;
+    border-radius: 5px;
+    display: none;
+}
+
+.loaded-fonts-container.active {
+    display: block;
+}
+
+.font-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    margin-bottom: 5px;
+    background-color: #f5f7fa;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.font-item:last-child {
+    margin-bottom: 0;
+}
+
+.font-item-name {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.font-item-preview {
+    padding: 2px 8px;
+    margin-right: 10px;
+    background-color: #fff;
+    border: 1px solid #dcdfe6;
+    border-radius: 3px;
+}
+
+.font-item-actions button {
+    background: none;
+    border: none;
+    color: #909399;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: color 0.3s;
+}
+
+.font-item-actions button:hover {
+    color: #409eff;
+}
+
+.font-item-actions button.delete-btn:hover {
+    color: #f56c6c;
 }
 
 /* 下拉框样式 */
@@ -321,6 +421,16 @@ footer {
     
     .custom-font-input-container button {
         margin-top: 10px;
+    }
+    
+    .font-upload-tabs {
+        flex-wrap: wrap;
+    }
+    
+    .tab-btn {
+        flex: 1;
+        padding: 8px 5px;
+        font-size: 0.85rem;
     }
 }
 

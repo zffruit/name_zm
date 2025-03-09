@@ -13,10 +13,22 @@ document.addEventListener('DOMContentLoaded', function() {
     const canvas = document.getElementById('signature-canvas');
     const ctx = canvas.getContext('2d');
     
-    // 自定义字体上传相关元素
+    // 文件上传相关元素
     const customFontInput = document.getElementById('custom-font-input');
     const customFontBtn = document.getElementById('custom-font-btn');
     const selectedFontName = document.getElementById('selected-font-name');
+    
+    // 文件夹上传相关元素
+    const fontFolderInput = document.getElementById('font-folder-input');
+    const fontFolderBtn = document.getElementById('font-folder-btn');
+    const loadedFontsCount = document.getElementById('loaded-fonts-count');
+    const loadedFontsList = document.getElementById('loaded-fonts-list');
+    
+    // 切换选项卡相关元素
+    const fileTabBtn = document.getElementById('file-tab-btn');
+    const folderTabBtn = document.getElementById('folder-tab-btn');
+    const fileUploadPanel = document.getElementById('file-upload-panel');
+    const folderUploadPanel = document.getElementById('folder-upload-panel');
     
     // 存储自定义字体对象
     let customFontList = [];
@@ -27,22 +39,192 @@ document.addEventListener('DOMContentLoaded', function() {
         sizeValue.textContent = this.value + 'px';
     });
     
-    // 自定义字体按钮点击事件
+    // 选项卡切换事件
+    fileTabBtn.addEventListener('click', function() {
+        switchTab('file');
+    });
+    
+    folderTabBtn.addEventListener('click', function() {
+        switchTab('folder');
+    });
+    
+    // 切换选项卡函数
+    function switchTab(tabName) {
+        if (tabName === 'file') {
+            fileTabBtn.classList.add('active');
+            folderTabBtn.classList.remove('active');
+            fileUploadPanel.classList.add('active');
+            folderUploadPanel.classList.remove('active');
+        } else if (tabName === 'folder') {
+            folderTabBtn.classList.add('active');
+            fileTabBtn.classList.remove('active');
+            folderUploadPanel.classList.add('active');
+            fileUploadPanel.classList.remove('active');
+        }
+    }
+    
+    // 单个字体文件按钮点击事件
     customFontBtn.addEventListener('click', function() {
         customFontInput.click();
     });
     
-    // 自定义字体文件选择事件
+    // 字体文件夹按钮点击事件
+    fontFolderBtn.addEventListener('click', function() {
+        fontFolderInput.click();
+    });
+    
+    // 单个字体文件选择事件
     customFontInput.addEventListener('change', handleFontUpload);
     
-    // 处理字体上传功能
+    // 字体文件夹选择事件
+    fontFolderInput.addEventListener('change', handleFolderUpload);
+    
+    // 处理字体文件夹上传
+    function handleFolderUpload(event) {
+        const files = event.target.files;
+        if (!files || files.length === 0) return;
+        
+        // 过滤出字体文件
+        const fontFiles = Array.from(files).filter(file => {
+            const fileName = file.name.toLowerCase();
+            return fileName.endsWith('.ttf') || 
+                   fileName.endsWith('.otf') || 
+                   fileName.endsWith('.woff') || 
+                   fileName.endsWith('.woff2');
+        });
+        
+        if (fontFiles.length === 0) {
+            showMessage('在选定的文件夹中未找到字体文件', 'warning');
+            return;
+        }
+        
+        // 更新字体计数显示
+        loadedFontsCount.textContent = `正在加载 ${fontFiles.length} 个字体文件...`;
+        
+        // 显示字体列表容器
+        loadedFontsList.classList.add('active');
+        
+        // 清空字体列表
+        loadedFontsList.innerHTML = '';
+        
+        // 加载每个字体文件
+        let loadedCount = 0;
+        let failedCount = 0;
+        
+        fontFiles.forEach(file => {
+            loadFont(file)
+                .then(fontInfo => {
+                    // 添加字体到列表
+                    addFontToList(fontInfo);
+                    loadedCount++;
+                    updateFontLoadingStatus(loadedCount, failedCount, fontFiles.length);
+                })
+                .catch(error => {
+                    failedCount++;
+                    updateFontLoadingStatus(loadedCount, failedCount, fontFiles.length);
+                    console.error(`加载字体失败: ${file.name}`, error);
+                });
+        });
+    }
+    
+    // 更新字体加载状态
+    function updateFontLoadingStatus(loadedCount, failedCount, totalCount) {
+        const totalProcessed = loadedCount + failedCount;
+        
+        if (totalProcessed === totalCount) {
+            if (failedCount > 0) {
+                loadedFontsCount.textContent = `已加载 ${loadedCount} 个字体, ${failedCount} 个加载失败`;
+                showMessage(`成功加载 ${loadedCount} 个字体, ${failedCount} 个加载失败`, 'info');
+            } else {
+                loadedFontsCount.textContent = `已成功加载 ${loadedCount} 个字体`;
+                showMessage(`成功加载 ${loadedCount} 个字体`, 'success');
+            }
+        } else {
+            loadedFontsCount.textContent = `正在加载... (${totalProcessed}/${totalCount})`;
+        }
+    }
+    
+    // 将字体添加到字体列表显示
+    function addFontToList(fontInfo) {
+        const fontItem = document.createElement('div');
+        fontItem.className = 'font-item';
+        fontItem.dataset.fontName = fontInfo.name;
+        
+        // 显示字体信息和预览
+        fontItem.innerHTML = `
+            <span class="font-item-name">${fontInfo.displayName}</span>
+            <span class="font-item-preview" style="font-family: '${fontInfo.name}'">预览文字</span>
+            <div class="font-item-actions">
+                <button class="use-btn" data-font="${fontInfo.name}">使用</button>
+                <button class="delete-btn" data-font="${fontInfo.name}">删除</button>
+            </div>
+        `;
+        
+        // 添加事件监听器
+        fontItem.querySelector('.use-btn').addEventListener('click', function() {
+            selectFont(fontInfo.name);
+        });
+        
+        fontItem.querySelector('.delete-btn').addEventListener('click', function() {
+            removeFont(fontInfo.name);
+            fontItem.remove();
+        });
+        
+        // 添加到列表
+        loadedFontsList.appendChild(fontItem);
+    }
+    
+    // 选择使用指定字体
+    function selectFont(fontName) {
+        // 在下拉菜单中选择该字体
+        for (let i = 0; i < fontSelect.options.length; i++) {
+            if (fontSelect.options[i].value === fontName) {
+                fontSelect.selectedIndex = i;
+                showMessage(`已选择字体: ${getFontDisplayName(fontName)}`, 'success');
+                return;
+            }
+        }
+        
+        // 如果下拉菜单中没有该字体，则添加
+        const option = document.createElement('option');
+        option.value = fontName;
+        option.textContent = `自定义: ${getFontDisplayName(fontName)}`;
+        option.selected = true;
+        fontSelect.appendChild(option);
+        
+        showMessage(`已选择字体: ${getFontDisplayName(fontName)}`, 'success');
+    }
+    
+    // 从列表中获取字体显示名称
+    function getFontDisplayName(fontName) {
+        const font = customFontList.find(f => f.name === fontName);
+        return font ? font.displayName : fontName;
+    }
+    
+    // 移除字体
+    function removeFont(fontName) {
+        // 从列表中移除
+        customFontList = customFontList.filter(font => font.name !== fontName);
+        
+        // 从下拉菜单中移除
+        for (let i = 0; i < fontSelect.options.length; i++) {
+            if (fontSelect.options[i].value === fontName) {
+                fontSelect.remove(i);
+                break;
+            }
+        }
+        
+        showMessage(`已移除字体: ${getFontDisplayName(fontName)}`, 'info');
+    }
+    
+    // 处理单个字体上传功能
     function handleFontUpload(event) {
         const file = event.target.files[0];
         if (!file) return;
         
         // 验证文件类型
         const validExtensions = ['.ttf', '.otf', '.woff', '.woff2'];
-        const fileName = file.name;
+        const fileName = file.name.toLowerCase();
         const fileExt = fileName.substring(fileName.lastIndexOf('.')).toLowerCase();
         
         if (!validExtensions.includes(fileExt)) {
@@ -54,59 +236,67 @@ document.addEventListener('DOMContentLoaded', function() {
         const displayName = fileName.substring(0, fileName.lastIndexOf('.'));
         selectedFontName.textContent = displayName;
         
-        // 读取字体文件
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const fontData = e.target.result;
-            
-            // 创建一个字体名称，使用时间戳确保唯一性
-            const fontName = `custom-font-${Date.now()}`;
-            
-            // 使用FontFace API加载字体
-            const customFont = new FontFace(fontName, fontData);
-            
-            customFont.load().then(function(loadedFace) {
-                // 添加字体到文档
-                document.fonts.add(loadedFace);
-                
-                // 保存字体信息到自定义字体列表
-                const fontInfo = {
-                    name: fontName,
-                    displayName: displayName,
-                    fontFace: loadedFace
-                };
-                
-                customFontList.push(fontInfo);
-                currentCustomFontIndex = customFontList.length - 1;
-                
-                // 添加到字体选择下拉菜单
-                const option = document.createElement('option');
-                option.value = fontName;
-                option.textContent = `自定义: ${displayName}`;
-                option.selected = true;
-                fontSelect.appendChild(option);
-                
+        // 加载字体
+        loadFont(file)
+            .then(fontInfo => {
+                // 自动选中该字体
+                selectFont(fontInfo.name);
                 showMessage(`字体 "${displayName}" 已成功加载！`, 'success');
-                
-                // 预览该字体（可选）
-                previewCustomFont(fontName);
-            }).catch(function(error) {
+            })
+            .catch(error => {
                 showMessage('字体加载失败: ' + error.message, 'error');
             });
-        };
-        
-        reader.readAsArrayBuffer(file);
     }
     
-    // 预览自定义字体
-    function previewCustomFont(fontName) {
-        // 设置预览字体
-        nameInput.style.fontFamily = fontName;
-        
-        // 如果名称输入框为空，添加示例文本
-        if (!nameInput.value.trim()) {
-            nameInput.placeholder = "使用自定义字体预览效果";
-        }
+    // 加载字体的通用函数
+    function loadFont(file) {
+        return new Promise((resolve, reject) => {
+            // 提取字体名称
+            const fileName = file.name;
+            const displayName = fileName.substring(0, fileName.lastIndexOf('.'));
+            
+            // 创建一个字体名称，使用时间戳确保唯一性
+            const fontName = `custom-font-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+            
+            // 使用FileReader读取文件
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const fontData = e.target.result;
+                    
+                    // 使用FontFace API加载字体
+                    const customFont = new FontFace(fontName, fontData);
+                    
+                    customFont.load().then(function(loadedFace) {
+                        // 添加字体到文档
+                        document.fonts.add(loadedFace);
+                        
+                        // 保存字体信息到自定义字体列表
+                        const fontInfo = {
+                            name: fontName,
+                            displayName: displayName,
+                            fontFace: loadedFace,
+                            originalFile: fileName
+                        };
+                        
+                        customFontList.push(fontInfo);
+                        resolve(fontInfo);
+                    }).catch(function(error) {
+                        reject(error);
+                    });
+                } catch (error) {
+                    reject(error);
+                }
+            };
+            
+            reader.onerror = function() {
+                reject(new Error('文件读取失败'));
+            };
+            
+            // 读取字体文件
+            reader.readAsArrayBuffer(file);
+        });
     }
     
     // 生成签名按钮点击事件

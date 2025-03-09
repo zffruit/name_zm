@@ -24,6 +24,22 @@ document.addEventListener('DOMContentLoaded', function() {
     const loadedFontsCount = document.getElementById('loaded-fonts-count');
     const loadedFontsList = document.getElementById('loaded-fonts-list');
     
+    // 创建模式切换相关元素
+    const textModeTab = document.getElementById('text-mode-tab');
+    const handwritingModeTab = document.getElementById('handwriting-mode-tab');
+    const textInputPanel = document.getElementById('text-input-panel');
+    const handwritingPanel = document.getElementById('handwriting-panel');
+    
+    // 手写签名相关元素
+    const handwritingCanvas = document.getElementById('handwriting-canvas');
+    const handwritingCtx = handwritingCanvas.getContext('2d');
+    const penColor = document.getElementById('pen-color');
+    const penSize = document.getElementById('pen-size');
+    const penSizeValue = document.getElementById('pen-size-value');
+    const handwritingStyle = document.getElementById('handwriting-style');
+    const clearHandwritingBtn = document.getElementById('clear-handwriting');
+    const applyHandwritingBtn = document.getElementById('apply-handwriting');
+    
     // 切换选项卡相关元素
     const fileTabBtn = document.getElementById('file-tab-btn');
     const folderTabBtn = document.getElementById('folder-tab-btn');
@@ -34,10 +50,55 @@ document.addEventListener('DOMContentLoaded', function() {
     let customFontList = [];
     let currentCustomFontIndex = -1;
     
+    // 手写相关变量
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
+    let handwritingPoints = []; // 存储所有绘制点
+    let handwritingData = null; // 存储最终的手写图像数据
+    
     // 更新字体大小显示
     sizeRange.addEventListener('input', function() {
         sizeValue.textContent = this.value + 'px';
     });
+    
+    // 更新笔触大小显示
+    penSize.addEventListener('input', function() {
+        penSizeValue.textContent = this.value + 'px';
+        
+        // 更新手写画笔预览
+        updatePenPreview();
+    });
+    
+    // 绘制手写画笔预览函数
+    function updatePenPreview() {
+        // 暂时不实现预览，如果需要可以添加一个小的预览元素
+    }
+    
+    // 模式切换事件
+    textModeTab.addEventListener('click', function() {
+        switchCreationMode('text');
+    });
+    
+    handwritingModeTab.addEventListener('click', function() {
+        switchCreationMode('handwriting');
+        setupHandwritingCanvas(); // 初始化手写画布
+    });
+    
+    // 切换创建模式函数
+    function switchCreationMode(mode) {
+        if (mode === 'text') {
+            textModeTab.classList.add('active');
+            handwritingModeTab.classList.remove('active');
+            textInputPanel.classList.add('active');
+            handwritingPanel.classList.remove('active');
+        } else if (mode === 'handwriting') {
+            handwritingModeTab.classList.add('active');
+            textModeTab.classList.remove('active');
+            handwritingPanel.classList.add('active');
+            textInputPanel.classList.remove('active');
+        }
+    }
     
     // 选项卡切换事件
     fileTabBtn.addEventListener('click', function() {
@@ -299,8 +360,313 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // 设置手写画布
+    function setupHandwritingCanvas() {
+        // 确保画布尺寸适应容器
+        const container = handwritingCanvas.parentElement;
+        const containerWidth = container.clientWidth;
+        // 保持原始高宽比
+        const ratio = handwritingCanvas.height / handwritingCanvas.width;
+        
+        // 设置画布大小
+        handwritingCanvas.width = containerWidth;
+        handwritingCanvas.height = containerWidth * ratio;
+        
+        // 清除现有内容
+        clearHandwritingCanvas();
+        
+        // 添加事件监听器
+        handwritingCanvas.addEventListener('mousedown', startDrawing);
+        handwritingCanvas.addEventListener('mousemove', draw);
+        handwritingCanvas.addEventListener('mouseup', stopDrawing);
+        handwritingCanvas.addEventListener('mouseout', stopDrawing);
+        
+        // 触摸设备支持
+        handwritingCanvas.addEventListener('touchstart', handleTouchStart);
+        handwritingCanvas.addEventListener('touchmove', handleTouchMove);
+        handwritingCanvas.addEventListener('touchend', handleTouchEnd);
+        
+        // 更新画笔预览
+        updatePenPreview();
+    }
+    
+    // 开始绘制
+    function startDrawing(e) {
+        isDrawing = true;
+        
+        // 获取鼠标相对于画布的位置
+        const rect = handwritingCanvas.getBoundingClientRect();
+        lastX = e.clientX - rect.left;
+        lastY = e.clientY - rect.top;
+        
+        // 添加起始点
+        handwritingPoints.push({
+            x: lastX,
+            y: lastY,
+            color: penColor.value,
+            size: parseInt(penSize.value),
+            isStart: true
+        });
+        
+        // 在起始点绘制一个点
+        handwritingCtx.beginPath();
+        handwritingCtx.fillStyle = penColor.value;
+        handwritingCtx.arc(lastX, lastY, parseInt(penSize.value) / 2, 0, Math.PI * 2);
+        handwritingCtx.fill();
+    }
+    
+    // 绘制
+    function draw(e) {
+        if (!isDrawing) return;
+        
+        // 获取鼠标位置
+        const rect = handwritingCanvas.getBoundingClientRect();
+        const currentX = e.clientX - rect.left;
+        const currentY = e.clientY - rect.top;
+        
+        // 设置绘制样式
+        handwritingCtx.strokeStyle = penColor.value;
+        handwritingCtx.lineWidth = parseInt(penSize.value);
+        handwritingCtx.lineCap = 'round';
+        handwritingCtx.lineJoin = 'round';
+        
+        // 绘制线条
+        handwritingCtx.beginPath();
+        handwritingCtx.moveTo(lastX, lastY);
+        handwritingCtx.lineTo(currentX, currentY);
+        handwritingCtx.stroke();
+        
+        // 存储当前点
+        handwritingPoints.push({
+            x: currentX,
+            y: currentY,
+            color: penColor.value,
+            size: parseInt(penSize.value),
+            isStart: false
+        });
+        
+        // 更新最后的位置
+        lastX = currentX;
+        lastY = currentY;
+    }
+    
+    // 停止绘制
+    function stopDrawing() {
+        if (isDrawing) {
+            isDrawing = false;
+            
+            // 保存手写图像数据
+            handwritingData = handwritingCtx.getImageData(0, 0, handwritingCanvas.width, handwritingCanvas.height);
+        }
+    }
+    
+    // 处理触摸开始事件
+    function handleTouchStart(e) {
+        e.preventDefault(); // 防止滚动
+        if (e.touches.length === 1) {
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousedown', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            startDrawing(mouseEvent);
+        }
+    }
+    
+    // 处理触摸移动事件
+    function handleTouchMove(e) {
+        e.preventDefault(); // 防止滚动
+        if (e.touches.length === 1) {
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousemove', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            draw(mouseEvent);
+        }
+    }
+    
+    // 处理触摸结束事件
+    function handleTouchEnd(e) {
+        e.preventDefault();
+        stopDrawing();
+    }
+    
+    // 清除手写画布
+    function clearHandwritingCanvas() {
+        handwritingCtx.clearRect(0, 0, handwritingCanvas.width, handwritingCanvas.height);
+        handwritingPoints = [];
+        handwritingData = null;
+    }
+    
+    // 手写样式处理
+    function applyHandwritingStyle(style) {
+        if (!handwritingData) return;
+        
+        // 清除画布
+        handwritingCtx.clearRect(0, 0, handwritingCanvas.width, handwritingCanvas.height);
+        
+        // 首先恢复原始图像
+        handwritingCtx.putImageData(handwritingData, 0, 0);
+        
+        // 应用不同的效果
+        if (style === 'smooth') {
+            // 平滑处理
+            // 这里可以添加平滑算法，比如贝塞尔曲线平滑
+            smoothHandwriting();
+        } else if (style === 'artistic') {
+            // 艺术效果
+            artisticHandwriting();
+        }
+        // 原始样式不需要处理
+    }
+    
+    // 平滑手写函数
+    function smoothHandwriting() {
+        // 这里实现简单的平滑处理
+        // 实际应用中可以使用更复杂的算法如贝塞尔曲线
+        if (handwritingPoints.length < 3) return;
+        
+        handwritingCtx.clearRect(0, 0, handwritingCanvas.width, handwritingCanvas.height);
+        
+        // 遍历所有点，进行平滑处理
+        for (let i = 0; i < handwritingPoints.length; i++) {
+            const point = handwritingPoints[i];
+            
+            if (point.isStart || i === 0) {
+                // 如果是新线条的起始点
+                handwritingCtx.beginPath();
+                handwritingCtx.moveTo(point.x, point.y);
+            } else if (i < handwritingPoints.length - 1) {
+                // 使用当前点和下一个点的中点作为控制点
+                const nextPoint = handwritingPoints[i + 1];
+                const xc = (point.x + nextPoint.x) / 2;
+                const yc = (point.y + nextPoint.y) / 2;
+                
+                // 设置样式
+                handwritingCtx.strokeStyle = point.color;
+                handwritingCtx.lineWidth = point.size;
+                
+                // 绘制平滑曲线
+                handwritingCtx.quadraticCurveTo(point.x, point.y, xc, yc);
+                handwritingCtx.stroke();
+            }
+        }
+    }
+    
+    // 艺术效果处理
+    function artisticHandwriting() {
+        // 添加艺术效果，比如笔触纹理、墨水扩散效果等
+        if (!handwritingData) return;
+        
+        // 简单实现：添加阴影效果
+        handwritingCtx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+        handwritingCtx.shadowBlur = 5;
+        handwritingCtx.shadowOffsetX = 2;
+        handwritingCtx.shadowOffsetY = 2;
+        
+        // 重新绘制所有点
+        handwritingCtx.clearRect(0, 0, handwritingCanvas.width, handwritingCanvas.height);
+        
+        for (let i = 0; i < handwritingPoints.length; i++) {
+            const point = handwritingPoints[i];
+            
+            if (point.isStart || i === 0) {
+                // 如果是新线条的起始点
+                handwritingCtx.beginPath();
+                handwritingCtx.moveTo(point.x, point.y);
+                
+                // 绘制起始点
+                handwritingCtx.fillStyle = point.color;
+                handwritingCtx.arc(point.x, point.y, point.size / 2, 0, Math.PI * 2);
+                handwritingCtx.fill();
+            } else {
+                // 设置样式
+                handwritingCtx.strokeStyle = point.color;
+                handwritingCtx.lineWidth = point.size;
+                
+                // 绘制线段
+                handwritingCtx.lineTo(point.x, point.y);
+                handwritingCtx.stroke();
+                
+                // 重新开始路径，保持连续性
+                handwritingCtx.beginPath();
+                handwritingCtx.moveTo(point.x, point.y);
+            }
+        }
+    }
+    
+    // 将手写应用到最终签名
+    function applyHandwritingToSignature() {
+        if (!handwritingData) {
+            showMessage('请先在手写区域书写您的签名', 'warning');
+            return;
+        }
+        
+        // 清除结果画布
+        resetCanvas();
+        
+        // 获取当前选择的效果样式
+        const effectStyle = handwritingStyle.value;
+        
+        // 应用手写效果到临时画布
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = handwritingCanvas.width;
+        tempCanvas.height = handwritingCanvas.height;
+        const tempCtx = tempCanvas.getContext('2d');
+        
+        // 首先将原始数据绘制到临时画布
+        tempCtx.putImageData(handwritingData, 0, 0);
+        
+        // 根据选择的效果应用不同的处理
+        if (effectStyle === 'smooth') {
+            // 如果上面的smoothHandwriting函数已经可以正常工作
+            // 这里可以直接调用它，但需要确保它不会直接修改原始handwritingCtx
+        } else if (effectStyle === 'artistic') {
+            // 添加艺术效果
+            tempCtx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+            tempCtx.shadowBlur = 5;
+            tempCtx.shadowOffsetX = 2;
+            tempCtx.shadowOffsetY = 2;
+            // 重新绘制
+            tempCtx.drawImage(handwritingCanvas, 0, 0);
+        }
+        
+        // 计算缩放因子以适应结果画布
+        const scaleX = canvas.width / handwritingCanvas.width;
+        const scaleY = canvas.height / handwritingCanvas.height;
+        const scale = Math.min(scaleX, scaleY);
+        
+        // 计算居中位置
+        const x = (canvas.width - handwritingCanvas.width * scale) / 2;
+        const y = (canvas.height - handwritingCanvas.height * scale) / 2;
+        
+        // 绘制到结果画布，保持比例
+        ctx.drawImage(tempCanvas, 0, 0, tempCanvas.width, tempCanvas.height, 
+                     x, y, tempCanvas.width * scale, tempCanvas.height * scale);
+        
+        // 启用下载按钮
+        downloadBtn.disabled = false;
+        
+        showMessage('手写签名已应用！', 'success');
+    }
+    
     // 生成签名按钮点击事件
     generateBtn.addEventListener('click', generateSignature);
+    
+    // 清除手写按钮点击事件
+    clearHandwritingBtn.addEventListener('click', function() {
+        clearHandwritingCanvas();
+        showMessage('手写内容已清除', 'info');
+    });
+    
+    // 应用手写签名按钮点击事件
+    applyHandwritingBtn.addEventListener('click', applyHandwritingToSignature);
+    
+    // 手写样式选择事件
+    handwritingStyle.addEventListener('change', function() {
+        applyHandwritingStyle(this.value);
+    });
     
     // 重置按钮点击事件
     resetBtn.addEventListener('click', resetCanvas);

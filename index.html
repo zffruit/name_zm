@@ -22,8 +22,14 @@
         
         <!-- 主要内容区域 -->
         <main>
+            <!-- 创建方式选择 -->
+            <div class="creation-tabs">
+                <button id="text-mode-tab" class="creation-tab active">文本输入</button>
+                <button id="handwriting-mode-tab" class="creation-tab">手写签名</button>
+            </div>
+            
             <!-- 签名生成表单 -->
-            <section class="generator-form">
+            <section id="text-input-panel" class="generator-form creation-panel active">
                 <div class="form-group">
                     <label for="name-input">您的姓名:</label>
                     <input type="text" id="name-input" placeholder="请输入您的姓名" maxlength="15">
@@ -100,6 +106,52 @@
                 </div>
                 
                 <button id="generate-btn" class="btn">生成签名</button>
+            </section>
+            
+            <!-- 手写签名面板 -->
+            <section id="handwriting-panel" class="generator-form creation-panel">
+                <div class="handwriting-container">
+                    <div class="handwriting-header">
+                        <h3>用鼠标书写您的签名</h3>
+                        <p>在下方区域内滑动鼠标进行书写</p>
+                    </div>
+                    
+                    <div class="drawing-area-container">
+                        <canvas id="handwriting-canvas" width="600" height="200"></canvas>
+                        <div class="drawing-guides">
+                            <div class="guide-line center-line"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="handwriting-controls">
+                        <div class="form-row">
+                            <div class="form-group half">
+                                <label for="pen-color">笔触颜色:</label>
+                                <input type="color" id="pen-color" value="#000000">
+                            </div>
+                            
+                            <div class="form-group half">
+                                <label for="pen-size">笔触粗细:</label>
+                                <input type="range" id="pen-size" min="1" max="10" value="3">
+                                <span id="pen-size-value">3px</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="handwriting-style">应用效果:</label>
+                            <select id="handwriting-style">
+                                <option value="original">原始书写</option>
+                                <option value="smooth">平滑处理</option>
+                                <option value="artistic">艺术效果</option>
+                            </select>
+                        </div>
+                        
+                        <div class="handwriting-buttons">
+                            <button id="clear-handwriting" class="btn btn-secondary">清除</button>
+                            <button id="apply-handwriting" class="btn">应用签名</button>
+                        </div>
+                    </div>
+                </div>
             </section>
             
             <!-- 签名结果展示区域 -->

@@ -57,6 +57,46 @@ main {
     gap: 40px;
 }
 
+/* 创建方式选择选项卡 */
+.creation-tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #dcdfe6;
+    padding-bottom: 5px;
+}
+
+.creation-tab {
+    padding: 10px 20px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-size: 1.1rem;
+    color: #606266;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin: 0 10px;
+}
+
+.creation-tab:hover {
+    color: #409eff;
+}
+
+.creation-tab.active {
+    color: #409eff;
+    border-bottom-color: #409eff;
+    font-weight: 600;
+}
+
+/* 创建面板样式 */
+.creation-panel {
+    display: none;
+}
+
+.creation-panel.active {
+    display: block;
+}
+
 /* 表单部分样式 */
 .generator-form {
     background-color: #fff;
@@ -243,6 +283,84 @@ input[type="text"]:focus {
     color: #f56c6c;
 }
 
+/* 手写签名样式 */
+.handwriting-container {
+    padding: 10px;
+}
+
+.handwriting-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.handwriting-header h3 {
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+    color: #2c3e50;
+}
+
+.handwriting-header p {
+    color: #606266;
+    font-size: 0.95rem;
+}
+
+.drawing-area-container {
+    position: relative;
+    margin: 20px 0;
+    border: 1px dashed #dcdfe6;
+    border-radius: 5px;
+    overflow: hidden;
+    background-color: #fff;
+}
+
+#handwriting-canvas {
+    cursor: crosshair;
+    display: block;
+    max-width: 100%;
+    height: auto;
+    background-color: #fff;
+}
+
+.drawing-guides {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+}
+
+.guide-line {
+    position: absolute;
+    background-color: rgba(220, 223, 230, 0.5);
+}
+
+.center-line {
+    left: 0;
+    right: 0;
+    height: 1px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.handwriting-controls {
+    margin-top: 20px;
+}
+
+.handwriting-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+#pen-size-value {
+    display: inline-block;
+    margin-left: 10px;
+    font-size: 0.9rem;
+    color: #666;
+}
+
 /* 下拉框样式 */
 select {
     width: 100%;
@@ -339,7 +457,7 @@ input[type="range"]::-webkit-slider-thumb {
     box-shadow: none;
 }
 
-#generate-btn {
+#generate-btn, #apply-handwriting {
     display: block;
     margin: 0 auto;
     width: 200px;
@@ -410,7 +528,7 @@ footer {
         padding: 20px;
     }
     
-    #generate-btn {
+    #generate-btn, #apply-handwriting {
         width: 100%;
     }
     
@@ -431,6 +549,16 @@ footer {
         flex: 1;
         padding: 8px 5px;
         font-size: 0.85rem;
+    }
+    
+    .creation-tabs {
+        padding-bottom: 0;
+    }
+    
+    .creation-tab {
+        padding: 8px 12px;
+        font-size: 1rem;
+        margin: 0 5px;
     }
 }
 
